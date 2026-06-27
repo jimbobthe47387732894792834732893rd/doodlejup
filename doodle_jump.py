@@ -9,6 +9,8 @@ SCREEN_HEIGHT = SCREEN_WIDTH * 1.5
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 running = True
+player_y = 250
+player_speed = 0
 
 while running:
     # poll for events
@@ -16,12 +18,16 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+    
+    # make the player fall down
+    player_y += player_speed
+    player_speed += 0.2
 
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("#FFF1DC")
 
     # RENDER YOUR GAME HERE
-    pygame.draw.rect(screen,"green",(250,250,SCREEN_WIDTH / 7,SCREEN_WIDTH / 6))
+    pygame.draw.rect(screen,"green",(250,player_y,SCREEN_WIDTH / 7,SCREEN_WIDTH / 6))
 
     # flip() the display to put your work on screen
     pygame.display.flip()
