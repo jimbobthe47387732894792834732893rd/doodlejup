@@ -1,4 +1,5 @@
 import pygame
+import random
 pygame.init()
 
 # configuration variables
@@ -6,6 +7,7 @@ SCREEN_WIDTH = 500
 SCREEN_HEIGHT = SCREEN_WIDTH * 1.5
 PLAYER_WIDTH = SCREEN_WIDTH / 7
 PLAYER_HEIGHT = SCREEN_WIDTH / 6
+PLATFORM_WIDTH = 100
 MAX_X_SPEED = 7
 
 PLAYER_IMAGE_ORIGINAL = pygame.image.load("images/bin.png")
@@ -19,6 +21,23 @@ player_y = 250
 player_y_speed = 0
 player_x = 250
 player_x_speed = 0
+
+# classes
+class Platform:
+    def __init__(self):
+        self.x = random.randint(0, SCREEN_WIDTH - PLATFORM_WIDTH)
+        self.y = 650
+    
+    def bounce_touching_player(self):
+        global player_y_speed
+        if player_y >= self.y - PLAYER_HEIGHT and player_y < SCREEN_HEIGHT and player_x < PLATFORM_WIDTH + self.x and player_x + PLAYER_WIDTH > self.x:
+            player_y_speed = -10
+            self.x = random.randint(0, SCREEN_WIDTH - PLATFORM_WIDTH)
+    
+    def draw(self):
+        pygame.draw.rect(screen,"green",(self.x, self.y, PLATFORM_WIDTH,SCREEN_WIDTH / 35))
+
+platform = Platform()
 
 while running:
     # poll for events
@@ -47,23 +66,26 @@ while running:
 
     # make the player fall down
     player_y += player_y_speed
-    player_y_speed += 0.2
+    player_y_speed += 0.25
 
     # make the player bounce
-    if player_y >= 650 - PLAYER_HEIGHT:
-        player_y_speed = -10
+    platform.bounce_touching_player()
 
     # fill the screen with a color to wipe away anything from last frame
-    screen.fill("#FFF1DC")
+    if player_y > SCREEN_HEIGHT:
+        screen.fill("#FFDCDC")
+    else:
+        screen.fill("#FFF1DC")
 
     # RENDER YOUR GAME HERE
     #pygame.draw.rect(screen,"green",(player_x,player_y,SCREEN_WIDTH / 7,SCREEN_WIDTH / 6))
     screen.blit(PLAYER_IMAGE, (player_x,player_y))
-    pygame.draw.rect(screen,"green",(0, 650,SCREEN_WIDTH,SCREEN_WIDTH / 35))
+    platform.draw()
 
     # flip() the display to put your work on screen
     pygame.display.flip()
 
     clock.tick(60)  # limits FPS to 60
+
 
 pygame.quit()
