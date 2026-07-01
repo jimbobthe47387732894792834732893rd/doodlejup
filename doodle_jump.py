@@ -8,6 +8,9 @@ PLAYER_WIDTH = SCREEN_WIDTH / 7
 PLAYER_HEIGHT = SCREEN_WIDTH / 6
 MAX_X_SPEED = 7
 
+PLAYER_IMAGE_ORIGINAL = pygame.image.load("images/bin.png")
+PLAYER_IMAGE = pygame.transform.scale(PLAYER_IMAGE_ORIGINAL, (PLAYER_WIDTH, PLAYER_HEIGHT))
+
 # pygame setup
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
@@ -25,18 +28,18 @@ while running:
             running = False
     
     # get which keys are being pressed
-    player_x += player_x_speed
+    # player_x += player_x_speed
     keys_pressed = pygame.key.get_pressed()
     if keys_pressed[pygame.K_LEFT]:
         # move the player left
-        player_x_speed -= 0.05
+        player_x -= 6.7
         if player_x_speed < -MAX_X_SPEED:
             player_x_speed = -MAX_X_SPEED
         if player_x < -PLAYER_WIDTH:
             player_x = SCREEN_WIDTH
     if keys_pressed[pygame.K_RIGHT]:
         # move the player right
-        player_x_speed += 0.05
+        player_x += 6.7
         if player_x_speed > MAX_X_SPEED:
             player_x_speed = MAX_X_SPEED
         if player_x > SCREEN_WIDTH:
@@ -54,7 +57,8 @@ while running:
     screen.fill("#FFF1DC")
 
     # RENDER YOUR GAME HERE
-    pygame.draw.rect(screen,"green",(player_x,player_y,SCREEN_WIDTH / 7,SCREEN_WIDTH / 6))
+    #pygame.draw.rect(screen,"green",(player_x,player_y,SCREEN_WIDTH / 7,SCREEN_WIDTH / 6))
+    screen.blit(PLAYER_IMAGE, (player_x,player_y))
     pygame.draw.rect(screen,"green",(0, 650,SCREEN_WIDTH,SCREEN_WIDTH / 35))
 
     # flip() the display to put your work on screen
