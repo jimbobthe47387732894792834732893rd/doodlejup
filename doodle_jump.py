@@ -8,6 +8,7 @@ SCREEN_HEIGHT = SCREEN_WIDTH * 1.5
 PLAYER_WIDTH = SCREEN_WIDTH / 7
 PLAYER_HEIGHT = SCREEN_WIDTH / 6
 PLATFORM_WIDTH = 100
+PLATFORM_HEIGHT = SCREEN_WIDTH / 35
 MAX_X_SPEED = 7
 
 PLAYER_IMAGE_ORIGINAL = pygame.image.load("images/bin.png")
@@ -23,26 +24,35 @@ player_x = 0
 player_x_speed = 0
 
 # helper functions
+def screen_y_to_game_coordinates(screen_y):
+    return -(screen_y - 375) - player_y
+def screen_x_to_game_coordinates(screen_x):
+    return screen_x - 250
+def game_y_to_screen_coordinates(game_y):
+    return -game_y + 375 + player_y
+def game_x_to_screen_coordinates(game_x):
+    return game_x + 250
+
 def screen_to_game_coordinates(screen_coordinate):
     # screen_coordinate is an (x,y) pixel position
     return (
-        screen_coordinate[0] - 250,    # x
-        -(screen_coordinate[1] - 375)  # y
+        screen_x_to_game_coordinates(screen_coordinate[0]), # x
+        screen_y_to_game_coordinates(screen_coordinate[1]), # x
     )
 
 def game_to_screen_coordinates(game_coordinate):
     # screen_coordinate is an (x,y) game position
     return (
-        game_coordinate[0] + 250,   # x
-        -game_coordinate[1] + 375  # y
+        game_x_to_screen_coordinates(game_coordinate[0]), # x
+        game_y_to_screen_coordinates(game_coordinate[1]), # x
     )
 
 # classes
 class Platform:
     def __init__(self, starting_y):
         self.x = random.randint(
-            int(-SCREEN_WIDTH/2 + PLATFORM_WIDTH),
-            int(SCREEN_WIDTH/2 - PLATFORM_WIDTH)
+            int(screen_x_to_game_coordinates(0) + PLATFORM_WIDTH),
+            int(screen_x_to_game_coordinates(SCREEN_WIDTH) - PLATFORM_WIDTH)
         )
         self.y = starting_y
     
@@ -50,23 +60,23 @@ class Platform:
         global player_y_speed
         if (
             player_y <= self.y + PLAYER_HEIGHT and
-            player_y > -SCREEN_HEIGHT/2 and
+            player_y > self.y - PLATFORM_HEIGHT and
             player_x < PLATFORM_WIDTH + self.x and
             player_x + PLAYER_WIDTH > self.x
         ):
             player_y_speed = 10
             self.x = random.randint(
-                int(-SCREEN_WIDTH/2 + PLATFORM_WIDTH),
-                int(SCREEN_WIDTH/2 - PLATFORM_WIDTH)
+            int(screen_x_to_game_coordinates(0) + PLATFORM_WIDTH),
+            int(screen_x_to_game_coordinates(SCREEN_WIDTH) - PLATFORM_WIDTH)
             )
-            self.y += 10
+            self.y += 20
     
     def draw(self):
         screen_position = game_to_screen_coordinates((self.x, self.y))
-        pygame.draw.rect(screen,"green",(screen_position[0], screen_position[1], PLATFORM_WIDTH, SCREEN_WIDTH / 35))
+        pygame.draw.rect(screen,"green",(screen_position[0], screen_position[1], PLATFORM_WIDTH, PLATFORM_HEIGHT))
 
 platforms = [
-    Platform(-SCREEN_HEIGHT/2 + 20),
+    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 20),
     # Platform(-30),
     # Platform(-20),
     # Platform(-10),
@@ -88,15 +98,15 @@ while running:
         player_x -= 6.7
         if player_x_speed < -MAX_X_SPEED:
             player_x_speed = -MAX_X_SPEED
-        if player_x < -PLAYER_WIDTH:
-            player_x = SCREEN_WIDTH
+        if player_x < -PLAYER_WIDTH-SCREEN_WIDTH/2:
+            player_x = SCREEN_WIDTH/2
     if keys_pressed[pygame.K_RIGHT]:
         # move the player right
         player_x += 6.7
         if player_x_speed > MAX_X_SPEED:
             player_x_speed = MAX_X_SPEED
-        if player_x > SCREEN_WIDTH:
-            player_x = -PLAYER_WIDTH
+        if player_x > SCREEN_WIDTH/2:
+            player_x = -SCREEN_WIDTH/2-PLAYER_WIDTH
 
     # make the player fall down
     player_y += player_y_speed
