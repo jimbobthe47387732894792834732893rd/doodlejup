@@ -17,27 +17,61 @@ PLAYER_IMAGE = pygame.transform.scale(PLAYER_IMAGE_ORIGINAL, (PLAYER_WIDTH, PLAY
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 running = True
-player_y = 250
+player_y = 0
 player_y_speed = 0
-player_x = 250
+player_x = 0
 player_x_speed = 0
+
+# helper functions
+def screen_to_game_coordinates(screen_coordinate):
+    # screen_coordinate is an (x,y) pixel position
+    return (
+        screen_coordinate[0] - 250,    # x
+        -(screen_coordinate[1] - 375)  # y
+    )
+
+def game_to_screen_coordinates(game_coordinate):
+    # screen_coordinate is an (x,y) game position
+    return (
+        game_coordinate[0] + 250,   # x
+        -game_coordinate[1] + 375  # y
+    )
 
 # classes
 class Platform:
-    def __init__(self):
-        self.x = random.randint(0, SCREEN_WIDTH - PLATFORM_WIDTH)
-        self.y = 650
+    def __init__(self, starting_y):
+        self.x = random.randint(
+            int(-SCREEN_WIDTH/2 + PLATFORM_WIDTH),
+            int(SCREEN_WIDTH/2 - PLATFORM_WIDTH)
+        )
+        self.y = starting_y
     
     def bounce_touching_player(self):
         global player_y_speed
-        if player_y >= self.y - PLAYER_HEIGHT and player_y < SCREEN_HEIGHT and player_x < PLATFORM_WIDTH + self.x and player_x + PLAYER_WIDTH > self.x:
-            player_y_speed = -10
-            self.x = random.randint(0, SCREEN_WIDTH - PLATFORM_WIDTH)
+        if (
+            player_y <= self.y + PLAYER_HEIGHT and
+            player_y > -SCREEN_HEIGHT/2 and
+            player_x < PLATFORM_WIDTH + self.x and
+            player_x + PLAYER_WIDTH > self.x
+        ):
+            player_y_speed = 10
+            self.x = random.randint(
+                int(-SCREEN_WIDTH/2 + PLATFORM_WIDTH),
+                int(SCREEN_WIDTH/2 - PLATFORM_WIDTH)
+            )
+            self.y += 10
     
     def draw(self):
-        pygame.draw.rect(screen,"green",(self.x, self.y, PLATFORM_WIDTH,SCREEN_WIDTH / 35))
+        screen_position = game_to_screen_coordinates((self.x, self.y))
+        pygame.draw.rect(screen,"green",(screen_position[0], screen_position[1], PLATFORM_WIDTH, SCREEN_WIDTH / 35))
 
-platform = Platform()
+platforms = [
+    Platform(-SCREEN_HEIGHT/2 + 20),
+    # Platform(-30),
+    # Platform(-20),
+    # Platform(-10),
+    # Platform(0)
+]
 
 while running:
     # poll for events
@@ -66,21 +100,23 @@ while running:
 
     # make the player fall down
     player_y += player_y_speed
-    player_y_speed += 0.25
+    player_y_speed -= 0.25
 
     # make the player bounce
-    platform.bounce_touching_player()
+    for platform in platforms:
+        platform.bounce_touching_player()
 
     # fill the screen with a color to wipe away anything from last frame
-    if player_y > SCREEN_HEIGHT:
+    if player_y < -SCREEN_HEIGHT/2:
         screen.fill("#FFDCDC")
     else:
         screen.fill("#FFF1DC")
 
     # RENDER YOUR GAME HERE
     #pygame.draw.rect(screen,"green",(player_x,player_y,SCREEN_WIDTH / 7,SCREEN_WIDTH / 6))
-    screen.blit(PLAYER_IMAGE, (player_x,player_y))
-    platform.draw()
+    screen.blit(PLAYER_IMAGE, game_to_screen_coordinates((player_x,player_y)))
+    for platform in platforms:
+        platform.draw()
 
     # flip() the display to put your work on screen
     pygame.display.flip()
