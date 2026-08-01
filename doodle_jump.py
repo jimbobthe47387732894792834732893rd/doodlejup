@@ -22,14 +22,15 @@ player_y = 0
 player_y_speed = 0
 player_x = 0
 player_x_speed = 0
+camera_y = 0
 
 # helper functions
 def screen_y_to_game_coordinates(screen_y):
-    return -(screen_y - 375) - player_y
+    return -(screen_y - 375) - camera_y
 def screen_x_to_game_coordinates(screen_x):
     return screen_x - 250
 def game_y_to_screen_coordinates(game_y):
-    return -game_y + 375 + player_y
+    return -game_y + 375 + camera_y
 def game_x_to_screen_coordinates(game_x):
     return game_x + 250
 
@@ -51,7 +52,7 @@ def game_to_screen_coordinates(game_coordinate):
 class Platform:
     def __init__(self, starting_y):
         self.x = random.randint(
-            int(screen_x_to_game_coordinates(0) + PLATFORM_WIDTH),
+            int(screen_x_to_game_coordinates(0)),
             int(screen_x_to_game_coordinates(SCREEN_WIDTH) - PLATFORM_WIDTH)
         )
         self.y = starting_y
@@ -62,25 +63,32 @@ class Platform:
             player_y <= self.y + PLAYER_HEIGHT and
             player_y > self.y - PLATFORM_HEIGHT and
             player_x < PLATFORM_WIDTH + self.x and
-            player_x + PLAYER_WIDTH > self.x
+            player_x + PLAYER_WIDTH > self.x and
+            player_y_speed < 0
         ):
             player_y_speed = 10
-            self.x = random.randint(
-            int(screen_x_to_game_coordinates(0) + PLATFORM_WIDTH),
-            int(screen_x_to_game_coordinates(SCREEN_WIDTH) - PLATFORM_WIDTH)
-            )
-            self.y += 20
+
     
     def draw(self):
+        if game_y_to_screen_coordinates(self.y) > SCREEN_HEIGHT:
+            self.y += SCREEN_HEIGHT
+            self.x = random.randint(
+                int(screen_x_to_game_coordinates(0)),
+                int(screen_x_to_game_coordinates(SCREEN_WIDTH) - PLATFORM_WIDTH)
+            )
         screen_position = game_to_screen_coordinates((self.x, self.y))
         pygame.draw.rect(screen,"green",(screen_position[0], screen_position[1], PLATFORM_WIDTH, PLATFORM_HEIGHT))
 
 platforms = [
     Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 20),
-    # Platform(-30),
-    # Platform(-20),
-    # Platform(-10),
-    # Platform(0)
+    # Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 120),
+    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 220),
+    # Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 320),
+    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 420),   
+    # Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 520),   
+    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 620),   
+    # Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 720),   
+    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 820),   
 ]
 
 while running:
@@ -111,6 +119,9 @@ while running:
     # make the player fall down
     player_y += player_y_speed
     player_y_speed -= 0.25
+
+    if player_y > camera_y:
+        camera_y = player_y
 
     # make the player bounce
     for platform in platforms:
