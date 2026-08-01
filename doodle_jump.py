@@ -56,6 +56,7 @@ class Platform:
             int(screen_x_to_game_coordinates(SCREEN_WIDTH) - PLATFORM_WIDTH)
         )
         self.y = starting_y
+        self.bouncy = random.randint(1,10) == 7
     
     def bounce_touching_player(self):
         global player_y_speed
@@ -66,7 +67,10 @@ class Platform:
             player_x + PLAYER_WIDTH > self.x and
             player_y_speed < 0
         ):
-            player_y_speed = 10
+            if self.bouncy:
+                player_y_speed = 25
+            else:
+                player_y_speed = 10
 
     
     def draw(self):
@@ -76,6 +80,7 @@ class Platform:
                 int(screen_x_to_game_coordinates(0)),
                 int(screen_x_to_game_coordinates(SCREEN_WIDTH) - PLATFORM_WIDTH)
             )
+            self.bouncy = random.randint(1,10) == 7
         screen_position = game_to_screen_coordinates((self.x, self.y))
         pygame.draw.rect(screen,"green",(screen_position[0], screen_position[1], PLATFORM_WIDTH, PLATFORM_HEIGHT))
 
@@ -128,7 +133,7 @@ while running:
         platform.bounce_touching_player()
 
     # fill the screen with a color to wipe away anything from last frame
-    if player_y < -SCREEN_HEIGHT/2:
+    if game_y_to_screen_coordinates(player_y) > SCREEN_HEIGHT + PLAYER_IMAGE.get_height():
         screen.fill("#FFDCDC")
     else:
         screen.fill("#FFF1DC")
