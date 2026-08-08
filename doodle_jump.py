@@ -56,6 +56,8 @@ class Platform:
             int(screen_x_to_game_coordinates(SCREEN_WIDTH) - PLATFORM_WIDTH)
         )
         self.y = starting_y
+        self.width = PLATFORM_WIDTH
+        self.reuse = True
         self.bouncy = random.randint(1,10) == 7
     
     def bounce_touching_player(self):
@@ -63,7 +65,7 @@ class Platform:
         if (
             player_y <= self.y + PLAYER_HEIGHT and
             player_y > self.y - PLATFORM_HEIGHT and
-            player_x < PLATFORM_WIDTH + self.x and
+            player_x < self.width + self.x and
             player_x + PLAYER_WIDTH > self.x and
             player_y_speed < 0
         ):
@@ -75,26 +77,33 @@ class Platform:
     
     def draw(self):
         if game_y_to_screen_coordinates(self.y) > SCREEN_HEIGHT:
-            self.y += SCREEN_HEIGHT
-            self.x = random.randint(
-                int(screen_x_to_game_coordinates(0)),
-                int(screen_x_to_game_coordinates(SCREEN_WIDTH) - PLATFORM_WIDTH)
-            )
-            self.bouncy = random.randint(1,10) == 7
+            if self.reuse == True:
+                self.y += SCREEN_HEIGHT
+                self.x = random.randint(
+                    int(screen_x_to_game_coordinates(0)),
+                    int(screen_x_to_game_coordinates(SCREEN_WIDTH) - PLATFORM_WIDTH)
+                )
+                self.bouncy = random.randint(1,10) == 7
+            else:
+                # turn into an enemy lol
+                self.x = -500000000
         screen_position = game_to_screen_coordinates((self.x, self.y))
-        pygame.draw.rect(screen,"green",(screen_position[0], screen_position[1], PLATFORM_WIDTH, PLATFORM_HEIGHT))
+        pygame.draw.rect(screen, "green", (screen_position[0], screen_position[1], self.width, PLATFORM_HEIGHT))
 
 platforms = [
-    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 20),
-    # Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 120),
-    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 220),
-    # Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 320),
-    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 420),   
-    # Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 520),   
-    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 620),   
-    # Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 720),   
-    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 820),   
+    # Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 20),
+    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 120),
+    # Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 220),
+    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 320),
+    # Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 420),   
+    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 520),   
+    # Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 620),   
+    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 720),   
+    # Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 820),   
+    Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + 920),   
 ]
+safety_platform = Platform(screen_y_to_game_coordinates(SCREEN_HEIGHT) + PLATFORM_HEIGHT)
+safety_platform.x = player_x
 
 while running:
     # poll for events
@@ -104,7 +113,7 @@ while running:
             running = False
     
     # get which keys are being pressed
-    # player_x += player_x_speed
+    player_x += player_x_speed
     keys_pressed = pygame.key.get_pressed()
     if keys_pressed[pygame.K_LEFT]:
         # move the player left
@@ -129,6 +138,7 @@ while running:
         camera_y = player_y
 
     # make the player bounce
+    safety_platform.bounce_touching_player()
     for platform in platforms:
         platform.bounce_touching_player()
 
@@ -139,8 +149,9 @@ while running:
         screen.fill("#FFF1DC")
 
     # RENDER YOUR GAME HERE
-    #pygame.draw.rect(screen,"green",(player_x,player_y,SCREEN_WIDTH / 7,SCREEN_WIDTH / 6))
+    #pygame.draw.rect(screen,"green",(player_x,player_y,SCREEN_WIDTH / 7,SCREEN_WIDTH / 6)) DO NOT UNCOMMMENT
     screen.blit(PLAYER_IMAGE, game_to_screen_coordinates((player_x,player_y)))
+    safety_platform.draw()
     for platform in platforms:
         platform.draw()
 
